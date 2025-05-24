@@ -28,8 +28,8 @@ public class InMemoryRocketRepositoryTest {
         Optional<Rocket> rocketFound = repository.findByName(TestData.RED_DRAGON);
 
         assertTrue(rocketFound.isPresent());
-        assertEquals(TestData.RED_DRAGON, rocketFound.get().getName());
-        assertEquals(RocketStatus.ON_GROUND, rocketFound.get().getStatus());
+        assertEquals(TestData.RED_DRAGON, rocketFound.get().name());
+        assertEquals(RocketStatus.ON_GROUND, rocketFound.get().status());
     }
 
     @Test
@@ -51,6 +51,6 @@ public class InMemoryRocketRepositoryTest {
         Optional<Rocket> rocketFound = repository.findByName(TestData.RED_DRAGON);
 
         assertTrue(rocketFound.isPresent());
-        assertEquals(RocketStatus.IN_REPAIR, rocketFound.get().getStatus());
+        assertEquals(RocketStatus.IN_REPAIR, rocketFound.get().status());
     }
 }

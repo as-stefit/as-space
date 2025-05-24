@@ -1,6 +1,11 @@
 package as.space.service;
 
 import as.space.TestData;
+import as.space.exception.RocketAlreadyExistsException;
+import as.space.model.Rocket;
+import as.space.model.RocketStatus;
+import as.space.repository.InMemoryRocketRepository;
+import as.space.repository.RocketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,13 +29,13 @@ public class RocketServiceTest {
 
         Rocket rocket = rocketService.createNewRocket(TestData.RED_DRAGON);
 
-        assertEquals(TestData.RED_DRAGON, rocket.getName());
-        assertEquals(initialStatus, rocket.getStatus());
+        assertEquals(TestData.RED_DRAGON, rocket.name());
+        assertEquals(initialStatus, rocket.status());
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
         assertTrue(rocketFound.isPresent());
-        assertEquals(TestData.RED_DRAGON, rocketFound.get().getName());
-        assertEquals(initialStatus, rocketFound.get().getStatus());
+        assertEquals(TestData.RED_DRAGON, rocketFound.get().name());
+        assertEquals(initialStatus, rocketFound.get().status());
     }
 
     @Test
