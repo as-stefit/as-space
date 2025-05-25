@@ -17,10 +17,6 @@ public class InMemoryRocketRepository implements RocketRepository {
 
     @Override
     public Optional<Rocket> findByName(String name) {
-        Rocket rocketFound = store.get(name);
-        if (rocketFound != null) {
-            return Optional.of(rocketFound);
-        }
-        return Optional.empty();
+        return Optional.ofNullable(store.get(name));
     }
 }
