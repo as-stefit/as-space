@@ -1,6 +1,8 @@
 package as.space.repository;
 
 import as.space.TestData;
+import as.space.model.Mission;
+import as.space.model.MissionStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
