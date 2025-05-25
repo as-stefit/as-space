@@ -1,6 +1,10 @@
 package as.space.service;
 
 import as.space.TestData;
+import as.space.exception.CannotAssignToEndedMissionException;
+import as.space.exception.MissionNotFoundException;
+import as.space.exception.RocketAlreadyAssignedException;
+import as.space.exception.RocketNotFoundException;
 import as.space.model.Mission;
 import as.space.model.MissionStatus;
 import as.space.model.Rocket;
@@ -21,6 +25,7 @@ public class ManagementServiceTest {
     private MissionRepository missionRepository;
     private RocketService rocketService;
     private MissionService missionService;
+    private ManagementService managementService;
 
 
     @BeforeEach
@@ -56,10 +61,10 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignOnGroundRocketToPendingMission() {
         Rocket rocket = rocketService.createNewRocket(TestData.RED_DRAGON);
-        Mission mission = missionService.createNewMission(TestData.MARS);
+       missionService.createNewMission(TestData.MARS);
 
         // TODO :  After implementing change rocket status feature, create rocket and change status with service methods
-        Rocket rocket2 = new Rocket(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
+        Rocket rocket2 = new Rocket(TestData.DRAGON_XL, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket2);
         managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
@@ -83,8 +88,8 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignOnGroundRocketToInProgressMission() {
         Rocket rocket = rocketService.createNewRocket(TestData.RED_DRAGON);
-        Mission mission = missionService.createNewMission(TestData.MARS);
-        Rocket rocket2 = rocketService.createNewRocket(TestData.DRAGON_XL);
+        missionService.createNewMission(TestData.MARS);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
         managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
         assertTrue(missionFound.isPresent());
@@ -109,7 +114,7 @@ public class ManagementServiceTest {
         // TODO : After change mission status feature implemented, create mission and change status using service methods
         Mission mission = new Mission(TestData.MARS, MissionStatus.ENDED);
         missionRepository.save(mission);
-        Rocket rocket = rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.RED_DRAGON);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
@@ -123,14 +128,14 @@ public class ManagementServiceTest {
         assertThrows(CannotAssignToEndedMissionException.class, () ->
                 managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS)
         );
-        assertEquals(null, rocketFound.get().mission());
+        assertNull(rocketFound.get().mission());
     }
 
     @Test
     void shouldThrowExceptionWhenAssignInSpaceRocketToScheduledMission() {
-        Mission mission = missionService.createNewMission(TestData.MARS);
+        missionService.createNewMission(TestData.MARS);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE, TestData.MOON);
         rocketRepository.save(rocket);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
@@ -157,7 +162,7 @@ public class ManagementServiceTest {
         Mission mission = new Mission(TestData.MARS, MissionStatus.PENDING);
         missionRepository.save(mission);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE, TestData.MOON);
         rocketRepository.save(rocket);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
@@ -184,7 +189,7 @@ public class ManagementServiceTest {
         Mission mission = new Mission(TestData.MARS, MissionStatus.IN_PROGRESS);
         missionRepository.save(mission);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE, TestData.MOON);
         rocketRepository.save(rocket);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
@@ -211,7 +216,7 @@ public class ManagementServiceTest {
         Mission mission = new Mission(TestData.MARS, MissionStatus.ENDED);
         missionRepository.save(mission);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_SPACE, TestData.MOON);
         rocketRepository.save(rocket);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
@@ -234,11 +239,11 @@ public class ManagementServiceTest {
 
     @Test
     void shouldThrowExceptionWhenAssignInRepairAssignedRocketToScheduledMission() {
-        Mission mission = missionService.createNewMission(TestData.MARS);
+        missionService.createNewMission(TestData.MARS);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Mission mission2 = missionService.createNewMission(TestData.MOON);
+        missionService.createNewMission(TestData.MOON);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
         managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MOON);
 
@@ -265,9 +270,9 @@ public class ManagementServiceTest {
         // TODO : After change mission status feature implemented, create mission and change status using service methods
         Mission mission = new Mission(TestData.MARS, MissionStatus.PENDING);
         missionRepository.save(mission);
-        Mission mission2 = missionService.createNewMission(TestData.MOON);
+        missionService.createNewMission(TestData.MOON);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
         managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MOON);
 
@@ -294,9 +299,9 @@ public class ManagementServiceTest {
         // TODO : After change mission status feature implemented, create mission and change status using service methods
         Mission mission = new Mission(TestData.MARS, MissionStatus.IN_PROGRESS);
         missionRepository.save(mission);
-        Mission mission2 = missionService.createNewMission(TestData.MOON);
+        missionService.createNewMission(TestData.MOON);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
         managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MOON);
 
@@ -323,9 +328,9 @@ public class ManagementServiceTest {
         // TODO : After change mission status feature implemented, create mission and change status using service methods
         Mission mission = new Mission(TestData.MARS, MissionStatus.ENDED);
         missionRepository.save(mission);
-        Mission mission2 = missionService.createNewMission(TestData.MOON);
+        missionService.createNewMission(TestData.MOON);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
         managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MOON);
 
@@ -350,7 +355,7 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignInRepairUnassignedRocketToScheduledMission() {
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
         Mission mission = missionService.createNewMission(TestData.MARS);
         assertEquals(RocketStatus.IN_REPAIR, rocket.status());
@@ -371,10 +376,11 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignInRepairUnassignedRocketToPendingMission() {
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
-        Rocket rocket2 = new Rocket(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
+        Rocket rocket2 = new Rocket(TestData.DRAGON_XL, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket2);
+        missionService.createNewMission(TestData.MARS);
         managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
         assertTrue(missionFound.isPresent());
@@ -397,10 +403,11 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignInRepairUnassignedRocketToInProgressMission() {
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
 
-        Rocket rocket2 = rocketService.createNewRocket(TestData.DRAGON_XL);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        missionService.createNewMission(TestData.MARS);
         managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
         assertTrue(missionFound.isPresent());
@@ -427,7 +434,7 @@ public class ManagementServiceTest {
         Mission mission = new Mission(TestData.MARS, MissionStatus.ENDED);
         missionRepository.save(mission);
         // TODO : After change rocket status feature implemented, create rocket and change status using service methods
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null);
         rocketRepository.save(rocket);
 
         Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);

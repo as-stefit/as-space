@@ -16,7 +16,7 @@ public class RocketService {
         if (rocketRepository.findByName(rocketName).isPresent()) {
             throw new RocketAlreadyExistsException(rocketName);
         }
-        Rocket rocket = new Rocket(rocketName, RocketStatus.ON_GROUND);
+        Rocket rocket = new Rocket(rocketName, RocketStatus.ON_GROUND, null);
         rocketRepository.save(rocket);
         return rocket;
     }

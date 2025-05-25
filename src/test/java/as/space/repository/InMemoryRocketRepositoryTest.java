@@ -22,7 +22,7 @@ public class InMemoryRocketRepositoryTest {
 
     @Test
     void shouldSaveAndFindRocketByName() {
-        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.ON_GROUND);
+        Rocket rocket = new Rocket(TestData.RED_DRAGON, RocketStatus.ON_GROUND,null);
 
         repository.save(rocket);
         Optional<Rocket> rocketFound = repository.findByName(TestData.RED_DRAGON);
@@ -42,8 +42,8 @@ public class InMemoryRocketRepositoryTest {
     @Test
     void shouldOverwriteExistingRocket() {
 
-        Rocket first = new Rocket(TestData.RED_DRAGON, RocketStatus.ON_GROUND);
-        Rocket second = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Rocket first = new Rocket(TestData.RED_DRAGON, RocketStatus.ON_GROUND, null);
+        Rocket second = new Rocket(TestData.RED_DRAGON, RocketStatus.IN_REPAIR, null );
 
         repository.save(first);
         repository.save(second);
