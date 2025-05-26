@@ -125,6 +125,21 @@ public class ManagementService {
         rocketRepository.save(updatedRocketRecord);
     }
 
+    public void finishMission(String missionName){
+        Mission mission = missionRepository.findByName(missionName).orElseThrow(() -> new MissionNotFoundException(missionName));
+        List<Rocket> rocketsAssignedToMission = rocketRepository.findByMission(missionName);
+        for(Rocket rocket : rocketsAssignedToMission){
+            RocketStatus rocketStatus = rocket.status();
+            if(rocket.status()==RocketStatus.IN_SPACE){
+                rocketStatus = RocketStatus.ON_GROUND;
+            }
+            Rocket updatedRocketRecord = new Rocket(rocket.name(), rocketStatus, null);
+            rocketRepository.save(updatedRocketRecord);
+        }
+        Mission updatedMissionRecord = new Mission(mission.name(), MissionStatus.ENDED, 0,0,0);
+        missionRepository.save(updatedMissionRecord);
+    }
+
     private void updateMission(String missionName, int changeAllRockets, int changeInSpace, int changeInRepair) {
         Mission mission = missionRepository.findByName(missionName).orElseThrow(() -> new MissionNotFoundException(missionName));
         int allRocketsCnt = mission.allRocketsCnt();

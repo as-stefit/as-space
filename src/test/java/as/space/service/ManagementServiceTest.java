@@ -1152,4 +1152,89 @@ public class ManagementServiceTest {
         assertThrows(CannotAssignToEndedMissionException.class, () ->
                 managementService.assignRocketsToMission(List.of(TestData.RED_DRAGON, TestData.DRAGON_XL, TestData.FALCON_HEAVY, TestData.LITTLE_DRAGON), TestData.MOON));
     }
+
+    // Finish Mission
+    @Test
+    void shouldFinishMissionAllRocketsInSpace(){
+        missionService.createNewMission(TestData.MARS);
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        rocketService.createNewRocket(TestData.FALCON_HEAVY);
+        rocketService.createNewRocket(TestData.LITTLE_DRAGON);
+        managementService.assignRocketsToMission(List.of(TestData.RED_DRAGON, TestData.DRAGON_XL, TestData.FALCON_HEAVY, TestData.LITTLE_DRAGON), TestData.MARS);
+
+        managementService.finishMission(TestData.MARS);
+
+        Optional<Rocket> rocketRedDragonFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Rocket> rocketDragonXlFound = rocketRepository.findByName(TestData.DRAGON_XL);
+        Optional<Rocket> rocketFalconHeavyFound = rocketRepository.findByName(TestData.FALCON_HEAVY);
+        Optional<Rocket> rocketLittleDragonFound = rocketRepository.findByName(TestData.LITTLE_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+
+        assertTrue(rocketRedDragonFound.isPresent());
+        assertTrue(rocketDragonXlFound.isPresent());
+        assertTrue(rocketFalconHeavyFound.isPresent());
+        assertTrue(rocketLittleDragonFound.isPresent());
+        assertTrue(missionFound.isPresent());
+
+        assertEquals(RocketStatus.ON_GROUND, rocketRedDragonFound.get().status());
+        assertEquals(RocketStatus.ON_GROUND, rocketDragonXlFound.get().status());
+        assertEquals(RocketStatus.ON_GROUND, rocketFalconHeavyFound.get().status());
+        assertEquals(RocketStatus.ON_GROUND, rocketLittleDragonFound.get().status());
+
+        assertNull(rocketRedDragonFound.get().mission());
+        assertNull(rocketDragonXlFound.get().mission());
+        assertNull(rocketFalconHeavyFound.get().mission());
+        assertNull(rocketLittleDragonFound.get().mission());
+        assertEquals(MissionStatus.ENDED, missionFound.get().status());
+        assertEquals(0, missionFound.get().inRepairCnt());
+        assertEquals(0, missionFound.get().inSpaceCnt());
+        assertEquals(0, missionFound.get().allRocketsCnt());
+    }
+    @Test
+    void shouldFinishMissionRocketsInSpaceAndInRepair(){
+        missionService.createNewMission(TestData.MARS);
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        rocketService.createNewRocket(TestData.FALCON_HEAVY);
+        rocketService.createNewRocket(TestData.LITTLE_DRAGON);
+        managementService.assignRocketsToMission(List.of(TestData.RED_DRAGON, TestData.DRAGON_XL, TestData.FALCON_HEAVY, TestData.LITTLE_DRAGON), TestData.MARS);
+
+        managementService.finishMission(TestData.MARS);
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        managementService.changeRocketStatus(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
+
+        Optional<Rocket> rocketRedDragonFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Rocket> rocketDragonXlFound = rocketRepository.findByName(TestData.DRAGON_XL);
+        Optional<Rocket> rocketFalconHeavyFound = rocketRepository.findByName(TestData.FALCON_HEAVY);
+        Optional<Rocket> rocketLittleDragonFound = rocketRepository.findByName(TestData.LITTLE_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketRedDragonFound.isPresent());
+        assertTrue(rocketDragonXlFound.isPresent());
+        assertTrue(rocketFalconHeavyFound.isPresent());
+        assertTrue(rocketLittleDragonFound.isPresent());
+        assertTrue(missionFound.isPresent());
+
+        assertEquals(RocketStatus.IN_REPAIR, rocketRedDragonFound.get().status());
+        assertEquals(RocketStatus.IN_REPAIR, rocketDragonXlFound.get().status());
+        assertEquals(RocketStatus.ON_GROUND, rocketFalconHeavyFound.get().status());
+        assertEquals(RocketStatus.ON_GROUND, rocketLittleDragonFound.get().status());
+
+        assertNull(rocketRedDragonFound.get().mission());
+        assertNull(rocketDragonXlFound.get().mission());
+        assertNull(rocketFalconHeavyFound.get().mission());
+        assertNull(rocketLittleDragonFound.get().mission());
+        assertEquals(MissionStatus.ENDED, missionFound.get().status());
+        assertEquals(0, missionFound.get().inRepairCnt());
+        assertEquals(0, missionFound.get().inSpaceCnt());
+        assertEquals(0, missionFound.get().allRocketsCnt());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTryingToFinishNonexistentMission(){
+        assertThrows(MissionNotFoundException.class, () ->
+                managementService.finishMission(TestData.MOON));
+    }
 }
