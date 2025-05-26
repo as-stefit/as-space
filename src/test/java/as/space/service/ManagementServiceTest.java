@@ -61,7 +61,7 @@ public class ManagementServiceTest {
     @Test
     void shouldAssignOnGroundRocketToPendingMission() {
         Rocket rocket = rocketService.createNewRocket(TestData.RED_DRAGON);
-       missionService.createNewMission(TestData.MARS);
+        missionService.createNewMission(TestData.MARS);
 
         // TODO :  After implementing change rocket status feature, create rocket and change status with service methods
         Rocket rocket2 = new Rocket(TestData.DRAGON_XL, RocketStatus.IN_REPAIR, null);
@@ -469,6 +469,216 @@ public class ManagementServiceTest {
         assertThrows(MissionNotFoundException.class, () ->
                 managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS)
         );
+    }
+
+    // Rocket Status
+
+    @Test
+    void shouldChangeOnGroundRocketToInRepair() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        assertTrue(rocketFound.isPresent());
+        assertEquals(RocketStatus.IN_REPAIR, rocketFound.get().status());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChangeOnGroundRocketToInSpace() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        assertThrows(OperationNotAllowedException.class, () ->
+                managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_SPACE));
+
+    }
+
+    @Test
+    void shouldChangeInSpaceRocketToInRepair() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        missionService.createNewMission(TestData.MARS);
+        managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS);
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketFound.isPresent());
+        assertTrue(missionFound.isPresent());
+        assertEquals(RocketStatus.IN_REPAIR, rocketFound.get().status());
+        assertEquals(MissionStatus.PENDING, missionFound.get().status());
+        assertEquals(1, missionFound.get().inRepairCnt());
+        assertEquals(0, missionFound.get().InSpaceCnt());
+        assertEquals(1, missionFound.get().AllRocketsCnt());
+    }
+
+    @Test
+    void shouldChangeInSpaceRocketToOnGround() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        missionService.createNewMission(TestData.MARS);
+        managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS);
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.ON_GROUND);
+
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketFound.isPresent());
+        assertTrue(missionFound.isPresent());
+        assertEquals(RocketStatus.ON_GROUND, rocketFound.get().status());
+        assertNull(rocketFound.get().mission());
+        assertEquals(MissionStatus.SCHEDULED, missionFound.get().status());
+        assertEquals(0, missionFound.get().inRepairCnt());
+        assertEquals(0, missionFound.get().InSpaceCnt());
+        assertEquals(0, missionFound.get().AllRocketsCnt());
+    }
+
+    @Test
+    void shouldChangeInRepairRocketUnassignedToOnGround() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        assertTrue(rocketFound.isPresent());
+        assertEquals(RocketStatus.IN_REPAIR, rocketFound.get().status());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.ON_GROUND);
+        Optional<Rocket> rocketFoundAfterOperation = rocketRepository.findByName(TestData.RED_DRAGON);
+        assertTrue(rocketFoundAfterOperation.isPresent());
+        assertEquals(RocketStatus.ON_GROUND, rocketFoundAfterOperation.get().status());
+    }
+
+
+    @Test
+    void shouldChangeInRepairRocketAssignedToOnGround() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        missionService.createNewMission(TestData.MARS);
+        managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS);
+        managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
+
+        Optional<Mission> initialMissionFound = missionRepository.findByName(TestData.MARS);
+        assertTrue(initialMissionFound.isPresent());
+        assertEquals(MissionStatus.IN_PROGRESS, initialMissionFound.get().status());
+        assertEquals(0, initialMissionFound.get().inRepairCnt());
+        assertEquals(2, initialMissionFound.get().InSpaceCnt());
+        assertEquals(2, initialMissionFound.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+
+        Optional<Mission> missionFound1 = missionRepository.findByName(TestData.MARS);
+        assertTrue(missionFound1.isPresent());
+        assertEquals(MissionStatus.PENDING, missionFound1.get().status());
+        assertEquals(1, missionFound1.get().inRepairCnt());
+        assertEquals(1, missionFound1.get().InSpaceCnt());
+        assertEquals(2, missionFound1.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.ON_GROUND);
+        
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketFound.isPresent());
+        assertTrue(missionFound.isPresent());
+        assertEquals(RocketStatus.ON_GROUND, rocketFound.get().status());
+        assertNull(rocketFound.get().mission());
+        assertEquals(MissionStatus.IN_PROGRESS, missionFound.get().status());
+        assertEquals(0, missionFound.get().inRepairCnt());
+        assertEquals(1, missionFound.get().InSpaceCnt());
+        assertEquals(1, missionFound.get().AllRocketsCnt());
+
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChangeInRepairRocketUnassignedToInSpace() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        assertThrows(OperationNotAllowedException.class, () ->
+                managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_SPACE));
+
+    }
+
+    @Test
+    void shouldChangeTheOnlyInRepairRocketAssignedToInSpace() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        missionService.createNewMission(TestData.MARS);
+        managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS);
+        managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
+
+        Optional<Mission> initialMissionFound = missionRepository.findByName(TestData.MARS);
+        assertTrue(initialMissionFound.isPresent());
+        assertEquals(MissionStatus.IN_PROGRESS, initialMissionFound.get().status());
+        assertEquals(0, initialMissionFound.get().inRepairCnt());
+        assertEquals(2, initialMissionFound.get().InSpaceCnt());
+        assertEquals(2, initialMissionFound.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+
+        Optional<Mission> missionFound1 = missionRepository.findByName(TestData.MARS);
+        assertTrue(missionFound1.isPresent());
+        assertEquals(MissionStatus.PENDING, missionFound1.get().status());
+        assertEquals(1, missionFound1.get().inRepairCnt());
+        assertEquals(1, missionFound1.get().InSpaceCnt());
+        assertEquals(2, missionFound1.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+
+
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketFound.isPresent());
+        assertTrue(missionFound.isPresent());
+        assertEquals(RocketStatus.IN_SPACE, rocketFound.get().status());
+        assertEquals(MissionStatus.IN_PROGRESS, missionFound.get().status());
+        assertEquals(0, missionFound.get().inRepairCnt());
+        assertEquals(2, missionFound.get().InSpaceCnt());
+        assertEquals(2, missionFound.get().AllRocketsCnt());
+    }
+
+    @Test
+    void shouldChangeOneOfInRepairRocketAssignedToInSpace() {
+        rocketService.createNewRocket(TestData.RED_DRAGON);
+        rocketService.createNewRocket(TestData.DRAGON_XL);
+        missionService.createNewMission(TestData.MARS);
+        managementService.assignRocketToMission(TestData.RED_DRAGON, TestData.MARS);
+        managementService.assignRocketToMission(TestData.DRAGON_XL, TestData.MARS);
+
+        Optional<Mission> initialMissionFound = missionRepository.findByName(TestData.MARS);
+        assertTrue(initialMissionFound.isPresent());
+        assertEquals(MissionStatus.IN_PROGRESS, initialMissionFound.get().status());
+        assertEquals(0, initialMissionFound.get().inRepairCnt());
+        assertEquals(2, initialMissionFound.get().InSpaceCnt());
+        assertEquals(2, initialMissionFound.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        managementService.changeRocketStatus(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
+
+        Optional<Mission> missionFound1 = missionRepository.findByName(TestData.MARS);
+        assertTrue(missionFound1.isPresent());
+        assertEquals(MissionStatus.PENDING, missionFound1.get().status());
+        assertEquals(2, missionFound1.get().inRepairCnt());
+        assertEquals(0, missionFound1.get().InSpaceCnt());
+        assertEquals(2, missionFound1.get().AllRocketsCnt());
+
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_SPACE);
+
+
+        Optional<Rocket> rocketFound = rocketRepository.findByName(TestData.RED_DRAGON);
+        Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
+
+        assertTrue(rocketFound.isPresent());
+        assertTrue(missionFound.isPresent());
+        assertEquals(RocketStatus.IN_SPACE, rocketFound.get().status());
+        assertEquals(MissionStatus.PENDING, missionFound.get().status());
+        assertEquals(1, missionFound.get().inRepairCnt());
+        assertEquals(1, missionFound.get().InSpaceCnt());
+        assertEquals(2, missionFound.get().AllRocketsCnt());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenChangeStatusOfNonExistentRocket() {
+        assertThrows(RocketNotFoundException.class, () ->
+                managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_SPACE));
     }
 
 }
