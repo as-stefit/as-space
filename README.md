@@ -18,6 +18,13 @@ A Java library for managing rockets and missions.
 - If it's needed to verify if rocket assignment to mission was successful, use one by one method. For multiple
   assignment, no exception is thrown for nonexistent / already assigned rockets.
 - Mission statuses are managed by changing rocket statuses. The only direct mission status change possible is to finish mission (set ENDED status).
+- There was one inconsistency in requirements. It was stated that : 
+“On ground” – initial status, where the rocket is not assigned to any mission 
+and:
+“Pending” – at least one rocket is assigned and one or more assigned rockets are in repair
+but then in report there was an example where Luna 1 mission is in Status "Pending" having 2 dragons in status "On Ground"
+- It was decided to implement status requirements, assuming there was an error in report example.
+- Rocket-to-mission assignment is stored in the Rocket record to prioritize data consistency in mission and rocket management operations. This design may slightly delay report generation, as data must be derived from rocket records, but ensures a single source of truth. The system favors consistency over efficiency.
 - TDD is followed for each new feature.
 
 ## How to use
@@ -76,6 +83,14 @@ import as.space.repository.InMemoryRocketRepository;
 
 ManagementService service = new ManagementService(new InMemoryRocketRepository(), new InMemoryMissionRepository());
 service.finishMission("Mars");
+```
+### Report Generation
+
+To genrate a report, use the `generateReport` method in the `ReportService` class:
+
+```java
+ReportService service = new ReportService(new InMemoryRocketRepository(), new InMemoryMissionRepository());
+String report = service.generateReport();
 ```
 
 ## Requirements

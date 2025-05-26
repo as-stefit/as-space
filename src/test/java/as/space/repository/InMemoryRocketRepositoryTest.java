@@ -71,7 +71,7 @@ public class InMemoryRocketRepositoryTest {
         List<Rocket> rocketsNoMissionFound = repository.findByMission(null);
         List<Rocket> rocketsVenusFound = repository.findByMission(TestData.VENUS);
         assertEquals(2, rocketsMarsFound.size());
-        assertEquals(List.of(redDragonRocket, blueDragonRocket), rocketsMarsFound);
+        assertEquals(List.of(blueDragonRocket, redDragonRocket), rocketsMarsFound);
         assertEquals(1, rocketsMoonFound.size());
         assertEquals(List.of(littleDragonRocket), rocketsMoonFound);
         assertEquals(1, rocketsNoMissionFound.size());
