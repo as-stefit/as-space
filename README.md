@@ -46,6 +46,15 @@ ManagementService service = new ManagementService(new InMemoryRocketRepository()
 service.assignRocketToMission("Red Dragon", "Mars");
 ```
 
+To change rocket status, use the `changeRocketStatus` method in the `ManagementService` class:
+
+```java
+import as.space.repository.InMemoryRocketRepository;
+
+ManagementService service = new ManagementService(new InMemoryRocketRepository(), new InMemoryMissionRepository());
+service.changeRocketStatus("Red Dragon", RocketStatus.IN_REPAIR);
+```
+
 ## Requirements
 - Java 17 or higher
 - Maven 3.6+
