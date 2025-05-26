@@ -1142,6 +1142,7 @@ public class ManagementServiceTest {
     @Test
     void shouldThrowExceptionWhenAssigningRocketsToEndedMission() {
         Mission mission = new Mission(TestData.MOON, MissionStatus.ENDED, 0, 0, 0);
+        missionRepository.save(mission);
 
         rocketService.createNewRocket(TestData.RED_DRAGON);
         rocketService.createNewRocket(TestData.DRAGON_XL);
