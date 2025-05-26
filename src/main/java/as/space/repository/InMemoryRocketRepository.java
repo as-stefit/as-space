@@ -20,6 +20,9 @@ public class InMemoryRocketRepository implements RocketRepository {
 
     @Override
     public List<Rocket> findByMission(String mission) {
-        return store.values().stream().filter((el) -> Objects.equals(el.mission(), mission)).toList();
+        return store.values().stream()
+                .filter(el -> Objects.equals(el.mission(), mission))
+                .sorted(Comparator.comparing(Rocket::name))
+                .toList();
     }
 }

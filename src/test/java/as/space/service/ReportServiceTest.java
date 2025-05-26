@@ -14,8 +14,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ReportServiceTest {
-    private RocketRepository rocketRepository;
-    private MissionRepository missionRepository;
     private RocketService rocketService;
     private MissionService missionService;
     private ManagementService managementService;
@@ -24,8 +22,8 @@ public class ReportServiceTest {
 
     @BeforeEach
     void setUp() {
-        rocketRepository = new InMemoryRocketRepository();
-        missionRepository = new InMemoryMissionRepository();
+        RocketRepository rocketRepository = new InMemoryRocketRepository();
+        MissionRepository missionRepository = new InMemoryMissionRepository();
         rocketService = new RocketService(rocketRepository);
         missionService = new MissionService(missionRepository);
 
@@ -65,18 +63,21 @@ public class ReportServiceTest {
 
         String expectedReport =
                 "Transit - IN_PROGRESS - 4 dragons\n" +
-                "  Dragon 1 - In Space\n" +
-                "  Dragon 2 - In Space\n" +
-                "  Dragon 3 - In Space\n" +
-                "  Dragon 4 - In Space\n" +
+                "  Dragon 1 - IN_SPACE\n" +
+                "  Dragon 2 - IN_SPACE\n" +
+                "  Dragon 3 - IN_SPACE\n" +
+                "  Dragon 4 - IN_SPACE\n" +
+                "Zeus - IN_PROGRESS - 2 dragons\n" +
+                "  Dragon XL - IN_SPACE\n" +
+                "  Falcon Heavy - IN_SPACE\n" +
+                "Venus - PENDING - 2 dragons\n" +
+                "  Dragon 5 - IN_REPAIR\n" +
+                "  Little Dragon - IN_SPACE\n" +
                 "Moon - IN_PROGRESS - 2 dragons\n" +
-               "  Red Dragon - In Space\n" +
-               "  Blue Dragon - In Space\n" +
-               "Venus - PENDING - 2 dragons\n" +
-                "  Dragon 5 - In Repair\n" +
-                "  Little Dragon - In Space\n" +
-                "Double Landing - SCHEDULED - 0 dragons\n" +
-                "MARS - ENDED - 0 dragons\n" 
+               "  Blue Dragon - IN_SPACE\n" +
+               "  Red Dragon - IN_SPACE\n" +
+                "Mars - ENDED - 0 dragons\n"+
+                "Double Landing - SCHEDULED - 0 dragons\n"
                 ;
 
         String report = reportService.generateReport();
