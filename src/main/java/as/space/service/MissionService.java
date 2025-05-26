@@ -16,7 +16,7 @@ public class MissionService {
         if (missionRepository.findByName(missionName).isPresent()) {
             throw new MissionAlreadyExistsException(missionName);
         }
-        Mission mission = new Mission(missionName, MissionStatus.SCHEDULED);
+        Mission mission = new Mission(missionName, MissionStatus.SCHEDULED,0,0,0);
         missionRepository.save(mission);
         return mission;
     }
