@@ -21,7 +21,7 @@ public class InMemoryMissionRepositoryTest {
 
     @Test
     void shouldSaveAndFindMissionByName() {
-        Mission mission = new Mission(TestData.MARS, MissionStatus.SCHEDULED);
+        Mission mission = new Mission(TestData.MARS, MissionStatus.SCHEDULED,0,0,0);
         repository.save(mission);
 
         Optional<Mission> missionFound = repository.findByName(TestData.MARS);
@@ -39,8 +39,8 @@ public class InMemoryMissionRepositoryTest {
 
     @Test
     void shouldOverrideExistingMission() {
-        Mission mission1 = new Mission(TestData.MARS, MissionStatus.SCHEDULED);
-        Mission mission2 = new Mission(TestData.MARS, MissionStatus.IN_PROGRESS);
+        Mission mission1 = new Mission(TestData.MARS, MissionStatus.SCHEDULED,0,0,0);
+        Mission mission2 = new Mission(TestData.MARS, MissionStatus.IN_PROGRESS,1,1,0);
 
         repository.save(mission1);
         repository.save(mission2);
