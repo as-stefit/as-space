@@ -8,6 +8,8 @@ import as.space.model.RocketStatus;
 import as.space.repository.MissionRepository;
 import as.space.repository.RocketRepository;
 
+import java.util.List;
+
 public class ManagementService {
     final private RocketRepository rocketRepository;
     final private MissionRepository missionRepository;
@@ -52,6 +54,16 @@ public class ManagementService {
         Mission updatedMissionRecord = new Mission(missionName, newMissionStatus, allRocketsCnt, inSpaceCnt, inRepairCnt);
         rocketRepository.save(updatedRocketRecord);
         missionRepository.save(updatedMissionRecord);
+    }
+
+    public void assignRocketsToMission(List<String> rockets, String missionName){
+        for (String rocketName : rockets){
+            try {
+                assignRocketToMission(rocketName, missionName);
+            }catch(RocketNotFoundException | RocketAlreadyAssignedException e){
+                // rockets not assigned
+            }
+        }
     }
 
     public void changeRocketStatus(String rocketName, RocketStatus status) {
