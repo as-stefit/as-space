@@ -1163,7 +1163,7 @@ public class ManagementServiceTest {
         rocketService.createNewRocket(TestData.LITTLE_DRAGON);
         managementService.assignRocketsToMission(List.of(TestData.RED_DRAGON, TestData.DRAGON_XL, TestData.FALCON_HEAVY, TestData.LITTLE_DRAGON), TestData.MARS);
 
-        managementService.finishMission(TestData.Mars);
+        managementService.finishMission(TestData.MARS);
 
         Optional<Rocket> rocketRedDragonFound = rocketRepository.findByName(TestData.RED_DRAGON);
         Optional<Rocket> rocketDragonXlFound = rocketRepository.findByName(TestData.DRAGON_XL);
@@ -1201,16 +1201,15 @@ public class ManagementServiceTest {
         rocketService.createNewRocket(TestData.LITTLE_DRAGON);
         managementService.assignRocketsToMission(List.of(TestData.RED_DRAGON, TestData.DRAGON_XL, TestData.FALCON_HEAVY, TestData.LITTLE_DRAGON), TestData.MARS);
 
-        managementService.finishMission(TestData.Mars);
+        managementService.finishMission(TestData.MARS);
+        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
+        managementService.changeRocketStatus(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
 
         Optional<Rocket> rocketRedDragonFound = rocketRepository.findByName(TestData.RED_DRAGON);
         Optional<Rocket> rocketDragonXlFound = rocketRepository.findByName(TestData.DRAGON_XL);
         Optional<Rocket> rocketFalconHeavyFound = rocketRepository.findByName(TestData.FALCON_HEAVY);
         Optional<Rocket> rocketLittleDragonFound = rocketRepository.findByName(TestData.LITTLE_DRAGON);
         Optional<Mission> missionFound = missionRepository.findByName(TestData.MARS);
-
-        managementService.changeRocketStatus(TestData.RED_DRAGON, RocketStatus.IN_REPAIR);
-        managementService.changeRocketStatus(TestData.DRAGON_XL, RocketStatus.IN_REPAIR);
 
         assertTrue(rocketRedDragonFound.isPresent());
         assertTrue(rocketDragonXlFound.isPresent());

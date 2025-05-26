@@ -12,4 +12,5 @@ public class TestData {
     // Missions
     public static final String MARS = "Mars";
     public static final String MOON = "Moon";
+    public static final String VENUS = "Venus";
 }

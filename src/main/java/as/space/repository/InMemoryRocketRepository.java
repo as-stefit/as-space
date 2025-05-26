@@ -2,9 +2,7 @@ package as.space.repository;
 
 import as.space.model.Rocket;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class InMemoryRocketRepository implements RocketRepository {
 
@@ -18,5 +16,10 @@ public class InMemoryRocketRepository implements RocketRepository {
     @Override
     public Optional<Rocket> findByName(String name) {
         return Optional.ofNullable(store.get(name));
+    }
+
+    @Override
+    public List<Rocket> findByMission(String mission) {
+        return store.values().stream().filter((el) -> Objects.equals(el.mission(), mission)).toList();
     }
 }
